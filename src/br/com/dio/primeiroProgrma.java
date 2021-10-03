@@ -1,71 +1,32 @@
-import lombok.AllArgsConstructor;
-import one.digitalinnovation.personapi.mapper.PersonMapper;
-import one.digitalinnovation.personapi.dto.request.PersonDTO;
-import one.digitalinnovation.personapi.dto.response.MessageResponseDTO;
-import one.digitalinnovation.personapi.entities.Person;
-import one.digitalinnovation.personapi.exception.PersonNotFoundException;
-import one.digitalinnovation.personapi.repositories.PersonRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+package com.pleiterson.ecommerce.checkoutpaymentecommerce.listener;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.pleiterson.ecommerce.checkoutapiecommerce.event.CheckoutCreatedEvent;
+import com.pleiterson.ecommerce.checkoutpaymentecommerce.entity.PaymentEntity;
+import com.pleiterson.ecommerce.checkoutpaymentecommerce.event.PaymentCreatedEvent;
+import com.pleiterson.ecommerce.checkoutpaymentecommerce.service.PaymentService;
+import com.pleiterson.ecommerce.checkoutpaymentecommerce.streaming.CheckoutProcessor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.stream.annotation.StreamListener;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.stereotype.Component;
 
-@Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
-public class PersonService {
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class CheckoutCreatedListener {
+    private final CheckoutProcessor checkoutProcessor;
 
-    private final PersonRepository personRepository;
+    private final PaymentService paymentService;
 
-    private final PersonMapper personMapper;
-
-    public MessageResponseDTO create(PersonDTO personDTO) {
-        Person person = personMapper.toModel(personDTO);
-        Person savedPerson = personRepository.save(person);
-
-        MessageResponseDTO messageResponse = createMessageResponse("Person successfully created with ID ", savedPerson.getId());
-
-        return messageResponse;
-    }
-
-    public PersonDTO findById(Long id) throws PersonNotFoundException {
-        Person person = personRepository.findById(id)
-                .orElseThrow(() -> new PersonNotFoundException(id));
-
-        return personMapper.toDTO(person);
-    }
-
-    public List<PersonDTO> listAll() {
-        List<Person> people = personRepository.findAll();
-        return people.stream()
-                .map(personMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    public MessageResponseDTO update(Long id, PersonDTO personDTO) throws PersonNotFoundException {
-        personRepository.findById(id)
-                .orElseThrow(() -> new PersonNotFoundException(id));
-
-        Person updatedPerson = personMapper.toModel(personDTO);
-        Person savedPerson = personRepository.save(updatedPerson);
-
-        MessageResponseDTO messageResponse = createMessageResponse("Person successfully updated with ID ", savedPerson.getId());
-
-        return messageResponse;
-    }
-
-    public void delete(Long id) throws PersonNotFoundException {
-        personRepository.findById(id)
-                .orElseThrow(() -> new PersonNotFoundException(id));
-
-        personRepository.deleteById(id);
-    }
-
-    private MessageResponseDTO createMessageResponse(String s, Long id2) {
-        return MessageResponseDTO.builder()
-                .message(s + id2)
+    @StreamListener(CheckoutProcessor.INPUT)
+    public void handler(CheckoutCreatedEvent checkoutCreatedEvent) {
+        log.info("checkoutCreatedEvent={}", checkoutCreatedEvent);
+        final PaymentEntity paymentEntity = paymentService.create(checkoutCreatedEvent).orElseThrow();
+        final PaymentCreatedEvent paymentCreatedEvent = PaymentCreatedEvent.newBuilder()
+                .setCheckoutCode(paymentEntity.getCheckoutCode())
+                .setPaymentCode(paymentEntity.getCode())
                 .build();
+        checkoutProcessor.output().send(MessageBuilder.withPayload(paymentCreatedEvent).build());
     }
 }
-
-

@@ -1,32 +1,85 @@
-package com.pleiterson.ecommerce.checkoutpaymentecommerce.listener;
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="./style/main.css">
+<link rel="stylesheet" href="./style/responsive.css">
 
-import com.pleiterson.ecommerce.checkoutapiecommerce.event.CheckoutCreatedEvent;
-import com.pleiterson.ecommerce.checkoutpaymentecommerce.entity.PaymentEntity;
-import com.pleiterson.ecommerce.checkoutpaymentecommerce.event.PaymentCreatedEvent;
-import com.pleiterson.ecommerce.checkoutpaymentecommerce.service.PaymentService;
-import com.pleiterson.ecommerce.checkoutpaymentecommerce.streaming.CheckoutProcessor;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.stream.annotation.StreamListener;
-import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.stereotype.Component;
+<link rel="stylesheet" href="./style/owl/owl.carousel.min.css">
+<link rel="stylesheet" href="./style/owl/owl.theme.default.min.css">
 
-@Component
-@RequiredArgsConstructor
-@Slf4j
-public class CheckoutCreatedListener {
-    private final CheckoutProcessor checkoutProcessor;
+<title>NETFLIX - DIO</title>
+</head>
+<body>
+<header>
+<div class="container">
+<h2 class="logo">NETFLIX</h2>
+<nav>
+<a href="#">Início</a>
+<a href="#">Séries</a>
+<a href="#">Filmes</a>
+<a href="#">Documentários</a>
+</nav>
+</div>
+</header>
+<main>
+<div class="filme-principal">
+<div class="container">
+<h3 class="titulo">ELEMENTAR</h3>
+<p class="descricao">Elementar leva Sherlock Holmes para a Nova York dos dias de hoje.</p>
+<button role="button" class="botao" onclick="abrir()">
+<i class="fas fa-play"></i>
+        ASSISTIR AGORA
+</button>
+<button role="button" class="botao" onclick="detalhes()">
+<i class="fas fa-info-circle"></i>
+        MAIS INFORMAÇÕES
+</button>
+</div>
+</div>
 
-    private final PaymentService paymentService;
+<div class="carrosel-filmes">
+<div class="owl-carousel owl-theme">
+<div class="item">
+<img class="box-filme" src="img/mini1.jpg" alt="" srcset="">
+</div>
+<div class="item">
+<img class="box-filme" src="img/mini2.jpg" alt="" srcset="">
+</div>
+<div class="item">
+<img class="box-filme" src="img/mini3.jpg" alt="" srcset="">
+</div>
+<div class="item">
+<img class="box-filme" src="img/mini4.jpg" alt="" srcset="">
+</div>
+<div class="item">
+<img class="box-filme" src="img/mini5.jpg" alt="" srcset="">
+</div>
+<div class="item">
+<img class="box-filme" src="img/mini6.jpg" alt="" srcset="">
+</div>
+<div class="item">
+<img class="box-filme" src="img/mini7.jpg" alt="" srcset="">
+</div>
+<div class="item">
+<img class="box-filme" src="img/mini8.jpg" alt="" srcset="">
+</div>
+<div class="item">
+<img class="box-filme" src="img/mini9.jpg" alt="" srcset="">
+</div>
+<div class="item">
+<img class="box-filme" src="img/mini10.jpg" alt="" srcset="">
+</div>
+<div class="item">
+<img class="box-filme" src="img/capa-elementar.jpg" alt="" srcset="">
+</div>
+</div>
+</div>
 
-    @StreamListener(CheckoutProcessor.INPUT)
-    public void handler(CheckoutCreatedEvent checkoutCreatedEvent) {
-        log.info("checkoutCreatedEvent={}", checkoutCreatedEvent);
-        final PaymentEntity paymentEntity = paymentService.create(checkoutCreatedEvent).orElseThrow();
-        final PaymentCreatedEvent paymentCreatedEvent = PaymentCreatedEvent.newBuilder()
-                .setCheckoutCode(paymentEntity.getCheckoutCode())
-                .setPaymentCode(paymentEntity.getCode())
-                .build();
-        checkoutProcessor.output().send(MessageBuilder.withPayload(paymentCreatedEvent).build());
-    }
-}
+</main>
+<script src="https://kit.fontawesome.com/f42097e3cb.js" crossorigin="anonymous"></script>
+<script src="js/owl/jquery.min.js"></script>
+<script src="js/owl/owl.carousel.min.js"></script>
+<script src="js/owl/setup.js"></script>
+<script src="js/main.js"></script>
